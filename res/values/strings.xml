@@ -9,4 +9,10 @@
     <string name="header_distinguished_name">Distinguished name</string>
     <string name="header_serial_number">Serial number</string>
     <string name="header_expiration_date">Expiration date</string>
+    <string name="version">Version </string>
+    <string name="revoked">Developer Credentials Revoked</string>
+    <string name="verified">Developer Credentials Verified</string>
+    <string name="non">Non Anjo Developer</string>
+    <string name="cancel">Cancel</string>
+    <string name="uninstall">Uninstall</string>
 </resources>

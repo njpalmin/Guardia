@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -21,7 +22,7 @@ import android.widget.TextView;
 
 //import com.anjolabs.Guardian.ApplicationAdapter.ViewHolder;
 
-public class PackageListActivity extends Activity implements OnItemClickListener{
+public class PackageListActivity extends Activity implements OnItemClickListener , DialogInterface.OnCancelListener{
 	static final String TAG = "PackageListActivity";
 	static final boolean DEBUG=Guardian.DEBUG;
 	
@@ -40,8 +41,8 @@ public class PackageListActivity extends Activity implements OnItemClickListener
 		mPm = getPackageManager();
 		//Bundle bundle = intent.getExtras();
 		//mAdapter = (AppEntryAdapterbak)bundle.getSerializable(Guardian.APPS_LIST);
-		//mAppEntryList = intent.getParcelableArrayListExtra(Guardian.APPS_LIST);
-		mAppEntryList = Guardian.getAppList();
+		mAppEntryList = intent.getParcelableArrayListExtra(Guardian.APPS_LIST);
+		//mAppEntryList = Guardian.getAppList();
 		
 		if(mAppEntryList != null){
 			mAdapter = new AppEntryAdapter(this,R.layout.app_entry,mAppEntryList);
@@ -59,7 +60,18 @@ public class PackageListActivity extends Activity implements OnItemClickListener
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		// TODO Auto-generated method stub
+
+		AppEntry appEntry;
+		appEntry = mAppEntryList.get(position);
+		if(DEBUG) Log.d(TAG,"AppEntry ="+ appEntry.getInfo().packageName+" position="+position);
 		
+		Intent intent = new Intent(this,AppDetailActivity.class);
+		Bundle bundle = new Bundle();
+		bundle.putParcelable(Guardian.APPS_ENTRY,appEntry);
+		//intent.putParcelableArrayListExtra(Guardian.APPS_ENTRY,appEntry);
+		intent.putExtras(bundle);
+		startActivity(intent);
+		//finish();
 	}
 
 
@@ -93,8 +105,8 @@ public class PackageListActivity extends Activity implements OnItemClickListener
 			}
 			AppEntry appEntry = items.get(position);
 			
-			holder.text.setText(appEntry.getInfo().loadLabel(mPm));
-			holder.icon.setImageDrawable(appEntry.getInfo().loadIcon(mPm));
+			holder.text.setText(appEntry.getInfo().applicationInfo.loadLabel(mPm));
+			holder.icon.setImageDrawable(appEntry.getInfo().applicationInfo.loadIcon(mPm));
 		
 			if ((appEntry.mAppCertState & Guardian.APP_WITH_ANJO_AKI_NOT_REVOKED) != 0){
 				holder.checkbox.setImageResource(R.drawable.green);
@@ -112,5 +124,19 @@ public class PackageListActivity extends Activity implements OnItemClickListener
             ImageView icon;
             ImageView checkbox;
         }
+	}
+
+    @Override
+    public void onBackPressed() {
+    	if(DEBUG)Log.d(TAG,"onBackPressed");
+    	super.onBackPressed();
+    	onStop();	
+    }
+
+	@Override
+	public void onCancel(DialogInterface dialog) {
+		// TODO Auto-generated method stub
+		if(DEBUG)Log.d(TAG,"onCancel");
+		//finish();
 	}
 }

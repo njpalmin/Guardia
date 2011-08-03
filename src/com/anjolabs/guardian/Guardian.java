@@ -4,7 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.security.cert.Certificate;
@@ -20,6 +19,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
@@ -42,6 +42,7 @@ public class Guardian extends Activity {
     static final String TAG = "Guardian";
     static final boolean DEBUG=true;
     public static final String APPS_LIST = "com.anjolabs.guardian.appslist";
+    public static final String APPS_ENTRY = "com.anjolabs.guardian.appsentry";
     
     public final static int APP_WITHOUT_ANJO_AKI = 1<<0;
     public final static int APP_WITH_ANJO_AKI_REVOKED = 1<<1;
@@ -51,8 +52,9 @@ public class Guardian extends Activity {
     private ListView mListView;
     private PackageManager mPm;
     List<ApplicationInfo> mApplications = new ArrayList<ApplicationInfo>();
+    List<PackageInfo> mPackages = new ArrayList<PackageInfo>();
     List<ApplicationInfo> mThirdPartyApplications = new ArrayList<ApplicationInfo>();
-    private static ArrayList<AppEntry> mAppList = new ArrayList<AppEntry>();
+    ArrayList<AppEntry> mAppList;
 
 
 	private AppEntry mAppEntry;
@@ -131,16 +133,20 @@ public class Guardian extends Activity {
 			if(mPm == null){
 				mPm = getPackageManager();
 			}
-			mApplications = mPm.getInstalledApplications(PackageManager.GET_UNINSTALLED_PACKAGES);
+			//mApplications = mPm.getInstalledApplications(PackageManager.GET_UNINSTALLED_PACKAGES);
+			mAppList = new ArrayList<AppEntry>();
+			mPackages = mPm.getInstalledPackages(0);
+			if(DEBUG)Log.d(TAG,"mPackages size="+mPackages.size());
 			
-			for(int i=0;i<mApplications.size();i++){
-				if(filterApp(mApplications.get(i))){
-					mAppEntry = new AppEntry(mApplications.get(i));
+			for(int i=0;i<mPackages.size();i++){
+				if(filterApp(mPackages.get(i).applicationInfo)){
+					mAppEntry = new AppEntry(mPackages.get(i));
 					collectCertificates(mAppEntry);
+					if(DEBUG) Log.d(TAG,"AppEntry state"+mAppEntry.mAppCertState);
 					mAppList.add(mAppEntry);
 					mAppEntry = null;
 				}
-				publishProgress((int) ((i / (float) mApplications.size()) * 100));
+				publishProgress((int) ((i / (float) mPackages.size()) * 100));
 			}
 			return mAppList;
 		}
@@ -169,66 +175,12 @@ public class Guardian extends Activity {
 			if(DEBUG) Log.d(TAG,"onPostExecute application size="+application.size());
 
 			Intent intent = new Intent(Guardian.this, PackageListActivity.class);
+			intent.putParcelableArrayListExtra(APPS_LIST,mAppList);
+			//intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
-			finish();
+			//finish();
 		}
 	}
-    
-    private class ApplicationAdapter extends ArrayAdapter<AppEntry> implements OnItemClickListener{
-    	private LayoutInflater inflater;
-		private List<AppEntry> items;
-    	
-    	public ApplicationAdapter(Context context, int textViewResourceId,
-    			List<AppEntry> items) {
-			super(context, textViewResourceId, items);
-			// TODO Auto-generated constructor stub
-			inflater = LayoutInflater.from(context);
-			this.items = items;
-		}
-
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent){
-			ViewHolder holder;
-			
-			if( convertView == null){
-				convertView = inflater.inflate(R.layout.app_entry, null);
-                holder = new ViewHolder();
-                holder.text = (TextView) convertView.findViewById(R.id.text1);
-                holder.icon = (ImageView) convertView.findViewById(R.id.icon1);
-                holder.checkbox = (ImageView) convertView.findViewById(R.id.icon2);
-
-                convertView.setTag(holder);
-			}else{
-				holder = (ViewHolder) convertView.getTag();
-			}
-			AppEntry appEntry = items.get(position);
-			
-			holder.text.setText(appEntry.getInfo().loadLabel(mPm));
-			holder.icon.setImageDrawable(appEntry.getInfo().loadIcon(mPm));
-		
-			if ((appEntry.mAppCertState & Guardian.APP_WITH_ANJO_AKI_NOT_REVOKED) != 0){
-				holder.checkbox.setImageResource(R.drawable.green);
-			}else if((appEntry.mAppCertState & Guardian.APP_WITH_ANJO_AKI_REVOKED) != 0){
-				holder.checkbox.setImageResource(R.drawable.red);
-			}else  if((appEntry.mAppCertState & Guardian.APP_WITHOUT_ANJO_AKI) != 0){
-				holder.checkbox.setImageResource(R.drawable.yellow);
-			}
-			
-			return convertView;
-		}
-        
-		class ViewHolder {
-            TextView text;
-            ImageView icon;
-            ImageView checkbox;
-        }
-
-		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position,long id) {
-			// TODO Auto-generated method stub
-			if(DEBUG) Log.d(TAG,"onItemClick position:"+position);
-		}
-     }
     
     private void collectCertificates(AppEntry appEntry){
     	 File sourceFile;
@@ -248,7 +200,7 @@ public class Guardian extends Activity {
              }
          }
     
-    	 sourceFile = new File((appEntry.getInfo()).sourceDir);
+    	 sourceFile = new File(((appEntry.getInfo()).applicationInfo).sourceDir);
     	 Certificate[] certs = null;
     	 try{
     		 
@@ -266,13 +218,19 @@ public class Guardian extends Activity {
 						CertInfo certInfo = new CertInfo(x509);
 						if(certInfo.hasVeriSignIssuer(mX509Cert)){
 							appEntry.mAppCertState |= Guardian.APP_WITH_ANJO_AKI_REVOKED;
-							//appEntry.mX509Crl = getX509CRL(certInfo);
-							if(appEntry.mX509Crl != null){
-								if(!appEntry.mX509Crl.isRevoked(mX509Cert)){
-									appEntry.mAppCertState |= Guardian.APP_WITH_ANJO_AKI_NOT_REVOKED;
-									if(DEBUG) Log.d(TAG,"mAppCertState="+ appEntry.mAppCertState);
-								}
+							X509CRL crl = getX509CRL(certInfo);
+							if( crl != null){
+								appEntry.setRevoked(crl.isRevoked(mX509Cert));
+
+							}else{
+								appEntry.setRevoked(true);
 							}
+							if(!appEntry.isRevoked()){
+								appEntry.mAppCertState |= Guardian.APP_WITH_ANJO_AKI_NOT_REVOKED;
+							}
+
+						}else{
+							appEntry.mAppCertState |= Guardian.APP_WITHOUT_ANJO_AKI;
 						}
                 	 }
                  }            	 
@@ -410,7 +368,4 @@ public class Guardian extends Activity {
 
      }
      
-     public static ArrayList<AppEntry> getAppList() {
- 		return mAppList;
- 	}
 }
