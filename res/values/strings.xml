@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, ManageApp!</string>
+    <string name="app_name">Guardian</string>
+    <string name="no_applications">No applications.</string>
+    <string name="loading_packages">Loading Packages...</string>
+    <string name="percentage">Scanning </string>
+	<string name="header_certificate_name">Name</string>
+    <string name="header_distinguished_name">Distinguished name</string>
+    <string name="header_serial_number">Serial number</string>
+    <string name="header_expiration_date">Expiration date</string>
+</resources>

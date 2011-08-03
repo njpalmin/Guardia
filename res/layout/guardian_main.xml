@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+	<LinearLayout  android:id="@+id/guardian"
+  		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:orientation="vertical">
+		<FrameLayout android:layout_height="wrap_content" 
+   			 android:id="@+id/bar" 
+   			 android:layout_width="match_parent"
+   			 android:background="@drawable/bar">
+       			<ImageView android:id="@+id/logo" 
+       		   		android:layout_width="wrap_content" 
+                  	android:layout_height="match_parent" 
+       		   		android:src="@drawable/anjo" 
+       		   		android:layout_gravity="center_vertical" 
+       		   		android:layout_marginLeft="40dip"/>
+   		</FrameLayout>
+		<FrameLayout android:layout_height="40dip" 
+   			 android:id="@+id/progressbar" 
+   			 android:layout_width="match_parent"
+   			 android:layout_marginTop="5dip">
+				<ProgressBar style="?android:attr/progressBarStyleHorizontal" 
+					android:id="@+id/progress" 
+					android:layout_width="match_parent" 
+					android:layout_height="15dip" 
+					android:layout_gravity="center_vertical" 
+					android:layout_marginLeft="20dip" android:layout_marginRight="20dip" >
+				</ProgressBar>
+		</FrameLayout>
+		<TextView android:layout_height="wrap_content" 
+			android:layout_width="wrap_content"
+			android:singleLine="true" 
+			android:id="@+id/progress_percentage" 
+			android:text="@string/percentage" android:layout_gravity="center"></TextView>
+		<FrameLayout android:layout_height="fill_parent" 
+   			 android:id="@+id/button_container" 
+   			 android:layout_width="match_parent"
+   			 android:layout_marginTop="5dip">
+			<ImageButton android:id="@+id/run" 
+					android:layout_width="wrap_content" 
+					android:layout_height="wrap_content"
+					android:background="@drawable/run" android:layout_gravity="center_horizontal"/>
+			<ImageButton android:id="@+id/set" 
+					android:layout_width="wrap_content" 
+					android:layout_height="wrap_content" 
+					android:layout_gravity="center_horizontal" 
+					android:layout_marginTop="65dip"
+					android:background="@drawable/set"/>
+			<ImageButton android:id="@+id/exit" 
+					android:layout_width="wrap_content" 
+					android:layout_height="wrap_content" 
+					android:layout_gravity="center_horizontal" android:layout_marginTop="180dip"
+					android:background="@drawable/exit"/>
+   		</FrameLayout>
+	</LinearLayout>
+</FrameLayout>
