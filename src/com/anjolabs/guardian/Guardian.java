@@ -5,17 +5,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
+import java.net.URLConnection;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -33,7 +29,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -48,8 +44,10 @@ public class Guardian extends Activity {
     public final static int APP_WITHOUT_ANJO_AKI = 1<<0;
     public final static int APP_WITH_ANJO_AKI_REVOKED = 1<<1;
     public final static int APP_WITH_ANJO_AKI_NOT_REVOKED = 1<<2;
+    static final int CONNECTION_TIMEOUT = 30000;
     
-    private ImageButton mRunButton;
+    private Button mRunButton;
+    private Button mExitButton;
     private ListView mListView;
     private PackageManager mPm;
     List<ApplicationInfo> mApplications = new ArrayList<ApplicationInfo>();
@@ -75,7 +73,8 @@ public class Guardian extends Activity {
         mContext =this;
          
         setContentView(R.layout.guardian_main);
-        mRunButton = (ImageButton)findViewById(R.id.run);
+        mRunButton = (Button)findViewById(R.id.run);
+        mExitButton = (Button)findViewById(R.id.exit);
         
         mRunButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -90,6 +89,12 @@ public class Guardian extends Activity {
                 }
             }
         });
+        mExitButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if(DEBUG) Log.d(TAG, "mExitButton clicked");
+                finish();	
+            }
+        });        
         
         InputStream is = null;
         try{
@@ -126,6 +131,7 @@ public class Guardian extends Activity {
 		protected void onPreExecute(){
 			mProgress = 0;
 			mProgressBar.setProgress(0);
+			mRunButton.setClickable(false);
 		}
 
 		@Override
@@ -170,9 +176,10 @@ public class Guardian extends Activity {
 		
 		@Override
 		protected void onPostExecute(List<AppEntry> application){
-			CharSequence progressText = getString(R.string.percentage)+" 100%";
-			mProgressText.setText(progressText);
+			CharSequence progressText = getString(R.string.finish)+" 100%";
 			
+			mProgressText.setText(progressText);
+			mRunButton.setClickable(true);
 			if(DEBUG) Log.d(TAG,"onPostExecute application size="+application.size());
 
 			Intent intent = new Intent(Guardian.this, PackageListActivity.class);
@@ -206,7 +213,7 @@ public class Guardian extends Activity {
     	 try{
     		 
     		 JarFile jarFile = new JarFile(sourceFile);
-    		/*
+    		
              JarEntry jarEntry = jarFile.getJarEntry("AndroidManifest.xml");
              certs = loadCertificates(jarFile, jarEntry, readBuffer);
              if(DEBUG) Log.d(TAG, "File " + sourceFile + ": entry=" + jarEntry
@@ -221,10 +228,9 @@ public class Guardian extends Activity {
 						if(certInfo.hasVeriSignIssuer(mX509Cert)){
 							appEntry.mAppCertState |= Guardian.APP_WITH_ANJO_AKI_REVOKED;
 							X509CRL crl = getX509CRL(certInfo);
+							if(DEBUG)Log.d(TAG,"CRL:"+crl);
 							if( crl != null){
-								if(DEBUG)Log.d(TAG,"CRL:"+crl);
-								if(DEBUG)Log.d(TAG,"Revoked:"+crl.isRevoked(mX509Cert));
-								appEntry.setRevoked(crl.isRevoked(mX509Cert));
+								appEntry.setRevoked(crl.isRevoked(x509));
 							}else{
 								appEntry.setRevoked(true);
 							}
@@ -237,9 +243,9 @@ public class Guardian extends Activity {
 						}
                 	 }
                  }            	 
-             }*/
+             }
             
-             
+             /*
              Enumeration entries = jarFile.entries();
              
              while (entries.hasMoreElements()) {
@@ -287,7 +293,7 @@ public class Guardian extends Activity {
                      jarFile.close();
                      return;
                  }
-             }
+             }*/
              jarFile.close();
 
              synchronized (mSync) {
@@ -341,6 +347,7 @@ public class Guardian extends Activity {
      private X509CRL getX509CRL(CertInfo certinfo){
     	 X509CRL crl = null;
     	 String cdp = certinfo.getFullNameCDP();
+		 InputStream is = null;
     	 if(certinfo.isHttpCDP()){
 			try {
 				 // handle PKCS #7 CRLs by getting the X509 CRL
@@ -349,19 +356,24 @@ public class Guardian extends Activity {
 				 }
 				 //if(DEBUG) Log.d(TAG,"cdp:"+ cdp);
 				 URL url = new URL(cdp);
-				 InputStream is = null;
+				 //URLConnection urlConnection = url.openConnection();
+				 //urlConnection.setConnectTimeout(CONNECTION_TIMEOUT);
+				 
+				 //is = new BufferedInputStream(urlConnection.getInputStream());
+
 				 is = url.openStream();
 				 //if(DEBUG) Log.d(TAG,"is:"+ is);
+				 //readStream(is);
 				 CertificateFactory cf = CertificateFactory.getInstance("X.509");
 				 crl = (X509CRL)cf.generateCRL(is);
 				 is.close();
-	         } catch (Exception e) {
+			}catch (Exception e) {
 	         	e.printStackTrace();
 	         	/*
 	         	Toast toast;
 	         	toast = Toast.makeText(mContext,"Can't connect to server to get CRL",1);
-	         	toast.show();
-	         	return null;*/
+	         	toast.show();*/
+	         	return null;
 	         }
     	 }
     	 return crl;

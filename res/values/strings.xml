@@ -5,6 +5,7 @@
     <string name="no_applications">No applications.</string>
     <string name="loading_packages">Loading Packages...</string>
     <string name="percentage">Scanning </string>
+    <string name="finish">Finished </string>
 	<string name="header_certificate_name">Name</string>
     <string name="header_distinguished_name">Distinguished name</string>
     <string name="header_serial_number">Serial number</string>
@@ -15,4 +16,7 @@
     <string name="non">Non Anjo Developer</string>
     <string name="cancel">Cancel</string>
     <string name="uninstall">Uninstall</string>
+    <string name="run">Run Manual Check</string>
+    <string name="set">Set Check Interval</string>
+    <string name="exit">Exit to Background</string>
 </resources>

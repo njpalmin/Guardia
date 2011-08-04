@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -25,8 +26,8 @@ public class AppDetailActivity extends Activity{
 	private TextView  mAppVersion;
 	private TextView  mAppRevoked;
 	
-	private ImageButton mCancel;
-	private ImageButton mUninstall;
+	private Button mCancel;
+	private Button mUninstall;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState){
@@ -52,8 +53,8 @@ public class AppDetailActivity extends Activity{
 		mAppName1 = (TextView)findViewById(R.id.app_name1);
 		mAppVersion = (TextView)findViewById(R.id.app_version);
 		mAppRevoked = (TextView)findViewById(R.id.app_cert_state);
-		mCancel = (ImageButton)findViewById(R.id.cancel);
-		mUninstall = (ImageButton)findViewById(R.id.uninstall);
+		mCancel = (Button)findViewById(R.id.cancel);
+		mUninstall = (Button)findViewById(R.id.uninstall);
 		
 		if(mPm != null){
 			mIcon.setImageDrawable(mAppEntry.getInfo().applicationInfo.loadIcon(mPm));
