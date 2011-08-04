@@ -6,11 +6,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -25,14 +32,8 @@ import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -40,7 +41,7 @@ import android.widget.Toast;
 
 public class Guardian extends Activity {
     static final String TAG = "Guardian";
-    static final boolean DEBUG=true;
+    static final boolean DEBUG=false;
     public static final String APPS_LIST = "com.anjolabs.guardian.appslist";
     public static final String APPS_ENTRY = "com.anjolabs.guardian.appsentry";
     
@@ -205,6 +206,7 @@ public class Guardian extends Activity {
     	 try{
     		 
     		 JarFile jarFile = new JarFile(sourceFile);
+    		/*
              JarEntry jarEntry = jarFile.getJarEntry("AndroidManifest.xml");
              certs = loadCertificates(jarFile, jarEntry, readBuffer);
              if(DEBUG) Log.d(TAG, "File " + sourceFile + ": entry=" + jarEntry
@@ -220,8 +222,9 @@ public class Guardian extends Activity {
 							appEntry.mAppCertState |= Guardian.APP_WITH_ANJO_AKI_REVOKED;
 							X509CRL crl = getX509CRL(certInfo);
 							if( crl != null){
+								if(DEBUG)Log.d(TAG,"CRL:"+crl);
+								if(DEBUG)Log.d(TAG,"Revoked:"+crl.isRevoked(mX509Cert));
 								appEntry.setRevoked(crl.isRevoked(mX509Cert));
-
 							}else{
 								appEntry.setRevoked(true);
 							}
@@ -234,9 +237,9 @@ public class Guardian extends Activity {
 						}
                 	 }
                  }            	 
-             }
+             }*/
+            
              
-             /*
              Enumeration entries = jarFile.entries();
              
              while (entries.hasMoreElements()) {
@@ -245,7 +248,7 @@ public class Guardian extends Activity {
                  if (je.getName().startsWith("META-INF/")) continue;
                  certs = loadCertificates(jarFile, je,readBuffer);
        
-                     Log.i(TAG, "File " + sourceFile + " entry " + je.getName()
+                 if(DEBUG)Log.d(TAG, "File " + sourceFile + " entry " + je.getName()
                              + ": certs=" + certs + " ("
                              + (certs != null ? certs.length : 0) + ")");
                     
@@ -253,26 +256,28 @@ public class Guardian extends Activity {
                      final int N = certs.length;
                      for (int i=0; i<N; i++) {
                     	 if(certs[i] instanceof X509Certificate){
-							X509Certificate x509 = (X509Certificate) certs[i];
-							//if(DEBUG) Log.d(TAG,"X509Cert IssuerDN: "+x509.get);
-							CertInfo certInfo = new CertInfo(x509);
-                    	 }
-	                     try{
-	                    	 if(DEBUG) Log.i(TAG,"Verify!");
-	                    	 //certs[0].verify(mKeyStore.getCertificate("RootCA").getPublicKey());
-	                    	 certs[0].verify((RSAPublicKey)mX509Cert.getPublicKey());
-	                     }catch(CertificateException e){
-	                    	 if(DEBUG) Log.e(TAG,"CertificateException !!!");
-	                     }catch(NoSuchAlgorithmException e){
-	                    	 if(DEBUG) Log.e(TAG,"NoSuchAlgorithmException!!!");
-	                     }catch(InvalidKeyException e){
-	                    	 if(DEBUG) Log.e(TAG,"InvalidKeyException!!!");
-	                     }catch(NoSuchProviderException e){
-	                    	 if(DEBUG) Log.e(TAG,"NoSuchProviderException!!!");
-	                     }catch(SignatureException e){
-	                    	 if(DEBUG) Log.e(TAG,"SignatureException!!!");
-	                       	 appEntry.setTrusted(false);
-	                     }
+     						X509Certificate x509 = (X509Certificate) certs[i];
+     						if(DEBUG) Log.d(TAG,"X509Cert IssuerDN: "+x509.getIssuerDN().getName());
+     						CertInfo certInfo = new CertInfo(x509);
+     						if(certInfo.hasVeriSignIssuer(mX509Cert)){
+     							appEntry.mAppCertState |= Guardian.APP_WITH_ANJO_AKI_REVOKED;
+     							X509CRL crl = getX509CRL(certInfo);
+     							if( crl != null){
+     								if(DEBUG)Log.d(TAG,"CRL:"+crl);
+     								if(DEBUG)Log.d(TAG,"Revoked:"+crl.isRevoked(x509));
+     								//appEntry.setRevoked(crl.isRevoked(mX509Cert));
+     								appEntry.setRevoked(crl.isRevoked(x509));
+     							}else{
+     								appEntry.setRevoked(true);
+     							}
+     							if(!appEntry.isRevoked()){
+     								appEntry.mAppCertState |= Guardian.APP_WITH_ANJO_AKI_NOT_REVOKED;
+     							}
+
+     						}else{
+     							appEntry.mAppCertState |= Guardian.APP_WITHOUT_ANJO_AKI;
+     						}
+                     	 }
                      }
                  }
                  if (certs == null) {
@@ -282,7 +287,7 @@ public class Guardian extends Activity {
                      jarFile.close();
                      return;
                  }
-             }*/
+             }
              jarFile.close();
 
              synchronized (mSync) {
