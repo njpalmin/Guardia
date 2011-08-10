@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 public class AppDetailActivity extends Activity{
 	static final String TAG = "AppDetailActivity";
-	static final boolean DEBUG=Guardian.DEBUG;
+	static final boolean DEBUG=MainMenuActivity.DEBUG;
 	
 	private AppEntry mAppEntry;
 	private PackageManager mPm;
@@ -37,7 +37,7 @@ public class AppDetailActivity extends Activity{
 		setContentView(R.layout.app_entry_detail);
 		Intent intent = getIntent();
 		Bundle bundle = intent.getExtras();
-		mAppEntry = bundle.getParcelable(Guardian.APPS_ENTRY);
+		mAppEntry = bundle.getParcelable(GuardianApp.APPS_ENTRY);
 		mPm= getPackageManager();
 		
 		initScreen();
@@ -47,9 +47,9 @@ public class AppDetailActivity extends Activity{
 	void initScreen(){
 		
 		
-		mIcon = (ImageView)findViewById(R.id.app_icon);
+		mIcon = (ImageView)findViewById(R.id.app_icon0);
 		mCheckBox = (ImageView)findViewById(R.id.app_checkbox);
-		mAppName = (TextView)findViewById(R.id.app_name);
+		mAppName = (TextView)findViewById(R.id.app_name0);
 		mAppName1 = (TextView)findViewById(R.id.app_name1);
 		mAppVersion = (TextView)findViewById(R.id.app_version);
 		mAppRevoked = (TextView)findViewById(R.id.app_cert_state);
@@ -61,15 +61,15 @@ public class AppDetailActivity extends Activity{
 			mAppName.setText(mAppEntry.getInfo().applicationInfo.loadLabel(mPm));
 			mAppName1.setText(mAppEntry.getInfo().applicationInfo.loadLabel(mPm));
 			
-			if ((mAppEntry.mAppCertState & Guardian.APP_WITH_ANJO_AKI_NOT_REVOKED) != 0){
+			if ((mAppEntry.mAppCertState & GuardianApp.APP_WITH_ANJO_AKI_NOT_REVOKED) != 0){
 				mCheckBox.setImageResource(R.drawable.green);
 				mAppRevoked.setText(getString(R.string.verified));
 				mAppRevoked.setTextColor(Color.GREEN);
-			}else if((mAppEntry.mAppCertState & Guardian.APP_WITH_ANJO_AKI_REVOKED) != 0){
+			}else if((mAppEntry.mAppCertState & GuardianApp.APP_WITH_ANJO_AKI_REVOKED) != 0){
 				mCheckBox.setImageResource(R.drawable.red);
 				mAppRevoked.setText(getString(R.string.revoked));
 				mAppRevoked.setTextColor(Color.RED);
-			}else  if((mAppEntry.mAppCertState & Guardian.APP_WITHOUT_ANJO_AKI) != 0){
+			}else  if((mAppEntry.mAppCertState & GuardianApp.APP_WITHOUT_ANJO_AKI) != 0){
 				mCheckBox.setImageResource(R.drawable.yellow);
 				mAppRevoked.setText(getString(R.string.non));
 				mAppRevoked.setTextColor(Color.YELLOW);

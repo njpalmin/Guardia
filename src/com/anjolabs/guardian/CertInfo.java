@@ -6,8 +6,8 @@ import java.security.cert.X509Certificate;
 import android.util.Log;
 
 public class CertInfo {
-	final static String TAG = Guardian.TAG;
-	final static boolean DEBUG = Guardian.DEBUG;
+	final static String TAG = MainMenuActivity.TAG;
+	final static boolean DEBUG = MainMenuActivity.DEBUG;
 
 	private X509Certificate mX509Cert;
     private boolean httpCDP, ldapCDP;

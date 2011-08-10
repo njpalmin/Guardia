@@ -7,6 +7,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,13 +26,13 @@ import android.widget.TextView;
 
 public class PackageListActivity extends Activity implements OnItemClickListener , DialogInterface.OnCancelListener{
 	static final String TAG = "PackageListActivity";
-	static final boolean DEBUG=Guardian.DEBUG;
+	static final boolean DEBUG=MainMenuActivity.DEBUG;
 	
 	private PackageManager mPm;
 	private ListView mListView;
 	private List<AppEntry> mAppEntryList = new ArrayList<AppEntry>();
 	private AppEntryAdapter mAdapter;
-	
+	private boolean mAnjoCheck;
 		
 	@Override
 	public void onCreate(Bundle savedInstanceState){
@@ -39,10 +41,7 @@ public class PackageListActivity extends Activity implements OnItemClickListener
 		
 		Intent intent = getIntent();
 		mPm = getPackageManager();
-		//Bundle bundle = intent.getExtras();
-		//mAdapter = (AppEntryAdapterbak)bundle.getSerializable(Guardian.APPS_LIST);
-		mAppEntryList = intent.getParcelableArrayListExtra(Guardian.APPS_LIST);
-		//mAppEntryList = Guardian.getAppList();
+		mAppEntryList = intent.getParcelableArrayListExtra(GuardianApp.APPS_LIST);
 		
 		if(mAppEntryList != null){
 			mAdapter = new AppEntryAdapter(this,R.layout.app_entry,mAppEntryList);
@@ -67,7 +66,7 @@ public class PackageListActivity extends Activity implements OnItemClickListener
 		
 		Intent intent = new Intent(this,AppDetailActivity.class);
 		Bundle bundle = new Bundle();
-		bundle.putParcelable(Guardian.APPS_ENTRY,appEntry);
+		bundle.putParcelable(GuardianApp.APPS_ENTRY,appEntry);
 		//intent.putParcelableArrayListExtra(Guardian.APPS_ENTRY,appEntry);
 		intent.putExtras(bundle);
 		startActivity(intent);
@@ -108,11 +107,11 @@ public class PackageListActivity extends Activity implements OnItemClickListener
 			holder.text.setText(appEntry.getInfo().applicationInfo.loadLabel(mPm));
 			holder.icon.setImageDrawable(appEntry.getInfo().applicationInfo.loadIcon(mPm));
 		
-			if ((appEntry.mAppCertState & Guardian.APP_WITH_ANJO_AKI_NOT_REVOKED) != 0){
+			if ((appEntry.mAppCertState & GuardianApp.APP_WITH_ANJO_AKI_NOT_REVOKED) != 0){
 				holder.checkbox.setImageResource(R.drawable.green);
-			}else if((appEntry.mAppCertState & Guardian.APP_WITH_ANJO_AKI_REVOKED) != 0){
+			}else if((appEntry.mAppCertState & GuardianApp.APP_WITH_ANJO_AKI_REVOKED) != 0){
 				holder.checkbox.setImageResource(R.drawable.red);
-			}else  if((appEntry.mAppCertState & Guardian.APP_WITHOUT_ANJO_AKI) != 0){
+			}else  if((appEntry.mAppCertState & GuardianApp.APP_WITHOUT_ANJO_AKI) != 0){
 				holder.checkbox.setImageResource(R.drawable.yellow);
 			}	
 			

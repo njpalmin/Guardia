@@ -44,7 +44,7 @@
     		android:layout_width="match_parent"
     		android:layout_height="56dip" >
 
-		    <ImageView android:id="@+id/app_icon"
+		    <ImageView android:id="@+id/app_icon0"
 		        android:layout_width="48dip"
 		        android:layout_height="48dip"
 		        android:scaleType="centerInside"
@@ -52,14 +52,14 @@
 		        android:layout_alignParentTop="true"
 		        android:layout_alignParentBottom="true" />
 		    
-		    <TextView android:id="@+id/app_name"
+		    <TextView android:id="@+id/app_name0"
 		        android:textAppearance="?android:attr/textAppearanceLarge"
 		        android:singleLine="true"
 		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
 		        android:paddingLeft="4dip"
 		        android:layout_centerVertical="true"
-		        android:layout_toRightOf="@id/app_icon"/>
+		        android:layout_toRightOf="@id/app_icon0"/>
 		        
 		     <ImageView android:id="@+id/app_checkbox"
 		        android:layout_width="48dip"
@@ -100,6 +100,7 @@
 			        android:layout_gravity="center_horizontal"
 			        android:layout_centerVertical="true"/>
 		</LinearLayout>
+		
 		<LinearLayout android:layout_width="fill_parent"
         	android:layout_height="wrap_content"
         	android:background="@android:drawable/bottom_bar"

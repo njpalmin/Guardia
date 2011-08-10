@@ -2,6 +2,7 @@
 <resources>
     <string name="hello">Hello World, ManageApp!</string>
     <string name="app_name">Guardian</string>
+    <string name="settings">Settings</string>
     <string name="no_applications">No applications.</string>
     <string name="loading_packages">Loading Packages...</string>
     <string name="percentage">Scanning </string>
@@ -16,7 +17,10 @@
     <string name="non">Non Anjo Developer</string>
     <string name="cancel">Cancel</string>
     <string name="uninstall">Uninstall</string>
+    <string name="ok">Ok</string>
     <string name="run">Run Manual Check</string>
-    <string name="set">Set Check Interval</string>
+    <string name="set">Set Checking Interval (Minutes)</string>
+    <string name="anjo_check">Only Display Apps Singed By Anjo</string>
     <string name="exit">Exit to Background</string>
+    
 </resources>

@@ -11,8 +11,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class AppEntry implements Parcelable{
-	static final String TAG = Guardian.TAG;
-	static final boolean DEBUG=Guardian.DEBUG;
+	static final String TAG = MainMenuActivity.TAG;
+	static final boolean DEBUG=MainMenuActivity.DEBUG;
 	
 	private PackageInfo mInfo;
 	//private boolean trusted;
