@@ -96,17 +96,17 @@
         	android:gravity="center_vertical"
         	android:layout_weight="1">
         	
-			<Button android:id="@+id/cancel"
+			<ImageButton android:id="@+id/cancel"
             	android:layout_width="0dip"
             	android:layout_height="wrap_content"
             	android:layout_weight="1"
-            	android:text="@string/cancel"/>
+            	android:src="@drawable/cancel"/>
 
-        	<Button android:id="@+id/ok"
+        	<ImageButton android:id="@+id/ok"
             	android:layout_width="0dip"
             	android:layout_height="wrap_content"
             	android:layout_weight="1"
-            	android:text="@string/ok"/>
+            	android:src="@drawable/ok"/>
 		</LinearLayout>	
 	</LinearLayout>				
 </LinearLayout>

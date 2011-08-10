@@ -1,7 +1,6 @@
 package com.anjolabs.guardian;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
@@ -13,6 +12,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 public class SettingsActivity extends Activity{
@@ -20,8 +20,8 @@ public class SettingsActivity extends Activity{
     static final boolean DEBUG= GuardianApp.DEBUG;
     
     private EditText mIntervalText;
-    private Button mCancelButton;
-    private Button mOkButton;
+    private ImageButton mCancelButton;
+    private ImageButton mOkButton;
     private CheckBox mAnjoCheckBox;
     private int mInterval;
     private boolean mAnjoCheck;
@@ -82,8 +82,8 @@ public class SettingsActivity extends Activity{
     	});
     	
     	
-    	mCancelButton = (Button)findViewById(R.id.cancel);
-    	mOkButton = (Button)findViewById(R.id.ok);
+    	mCancelButton = (ImageButton)findViewById(R.id.cancel);
+    	mOkButton = (ImageButton)findViewById(R.id.ok);
     	
     	mCancelButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

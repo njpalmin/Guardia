@@ -27,7 +27,7 @@ import android.util.Log;
 
 public class GuardianApp extends Application implements OnSharedPreferenceChangeListener{
     static final String TAG = "GuardianApp";
-    static final boolean DEBUG=true;
+    static final boolean DEBUG=false;
     
     public static final String APPS_LIST = "com.anjolabs.guardian.appslist";
     public static final String APPS_ENTRY = "com.anjolabs.guardian.appsentry";
@@ -43,7 +43,7 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
     public final static String PREFS_INTERVAL ="prefs_interval";
     public final static String PREFS_ANJOCHECK ="prefs_anjocheck";
     
-    public static int DEFAULT_CHECK_INTERVAL = 1;//default 60 mins
+    public static int DEFAULT_CHECK_INTERVAL = 60;//default 60 mins
     
     //Message codes mHandler use
     private static final int RESET_TIME_INTERVAL = 100;

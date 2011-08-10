@@ -15,11 +15,10 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,9 +28,9 @@ import com.anjolabs.guardian.GuardianUtils.appComparator;
 public class MainMenuActivity extends Activity implements OnSharedPreferenceChangeListener{
     static final String TAG = "MainMenuActivity";
     static final boolean DEBUG = GuardianApp.DEBUG;
-    private Button mRunButton;
-    private Button mSetButton;
-    private Button mExitButton;
+    private ImageButton mRunButton;
+    private ImageButton mSetButton;
+    private ImageButton mExitButton;
     private PackageManager mPm;
     List<ApplicationInfo> mApplications = new ArrayList<ApplicationInfo>();
     List<PackageInfo> mPackages = new ArrayList<PackageInfo>();
@@ -69,9 +68,9 @@ public class MainMenuActivity extends Activity implements OnSharedPreferenceChan
     }
 	
 	void initView(){
-        mRunButton = (Button)findViewById(R.id.run);
-        mSetButton = (Button)findViewById(R.id.set);
-        mExitButton = (Button)findViewById(R.id.exit);
+        mRunButton = (ImageButton)findViewById(R.id.run);
+        mSetButton = (ImageButton)findViewById(R.id.set);
+        mExitButton = (ImageButton)findViewById(R.id.exit);
         
         mRunButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

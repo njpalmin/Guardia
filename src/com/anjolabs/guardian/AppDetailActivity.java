@@ -26,8 +26,8 @@ public class AppDetailActivity extends Activity{
 	private TextView  mAppVersion;
 	private TextView  mAppRevoked;
 	
-	private Button mCancel;
-	private Button mUninstall;
+	private ImageButton mCancel;
+	private ImageButton mUninstall;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState){
@@ -45,16 +45,14 @@ public class AppDetailActivity extends Activity{
 	}
 	
 	void initScreen(){
-		
-		
 		mIcon = (ImageView)findViewById(R.id.app_icon0);
 		mCheckBox = (ImageView)findViewById(R.id.app_checkbox);
 		mAppName = (TextView)findViewById(R.id.app_name0);
 		mAppName1 = (TextView)findViewById(R.id.app_name1);
 		mAppVersion = (TextView)findViewById(R.id.app_version);
 		mAppRevoked = (TextView)findViewById(R.id.app_cert_state);
-		mCancel = (Button)findViewById(R.id.cancel);
-		mUninstall = (Button)findViewById(R.id.uninstall);
+		mCancel = (ImageButton)findViewById(R.id.cancel);
+		mUninstall = (ImageButton)findViewById(R.id.uninstall);
 		
 		if(mPm != null){
 			mIcon.setImageDrawable(mAppEntry.getInfo().applicationInfo.loadIcon(mPm));
