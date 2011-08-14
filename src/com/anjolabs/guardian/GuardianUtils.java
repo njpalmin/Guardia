@@ -16,7 +16,11 @@ import java.util.jar.JarFile;
 
 import android.content.pm.ApplicationInfo;
 import android.util.Log;
-
+/**
+ * 
+ * @author Alphalilin@gmail.com
+ *
+ */
 public class GuardianUtils {
     static final String TAG = "GuardianUtils";
     static final boolean DEBUG = GuardianApp.DEBUG;

@@ -5,10 +5,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,13 +18,14 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-
-/*
- * This Activity is to list all parsed applications.
+/**
+ * his Activity is to list all parsed applications.
+ * @author Alphalilin@gmail.com
+ *
  */
 public class PackageListActivity extends Activity implements OnItemClickListener{
 	static final String TAG = "PackageListActivity";
-	static final boolean DEBUG=MainMenuActivity.DEBUG;
+	static final boolean DEBUG=GuardianApp.DEBUG;
 	
 	private PackageManager mPm;
 	private ListView mListView;

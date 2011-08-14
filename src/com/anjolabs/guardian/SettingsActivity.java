@@ -15,8 +15,10 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-/*
- * This Activity is to set the application configuration values(interval and anjo check).
+/**
+ * Set the configuration (interval and anjocheck) values.
+ * @author Alphalilin@gmail.com
+ *
  */
 public class SettingsActivity extends Activity{
     static final String TAG = "SettingsActivity";

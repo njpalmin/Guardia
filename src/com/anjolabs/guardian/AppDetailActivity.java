@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 /**
  * Activity to show the application details.
- * @author alphalilin@gmail.com
+ * @author Alphalilin@gmail.com
  *
  */
 public class AppDetailActivity extends Activity{

@@ -25,9 +25,12 @@ import android.widget.Toast;
 
 import com.anjolabs.guardian.GuardianUtils.appComparator;
 
-/*
+/**
+ * 
  * MainMenuActivity is the main entry of Guardian application, and it's the only one.
  * In MainMenuActivity, it describes the layout of the main menu.
+ * @author PTMN68
+ *
  */
 public class MainMenuActivity extends Activity implements OnSharedPreferenceChangeListener{
     static final String TAG = "MainMenuActivity";

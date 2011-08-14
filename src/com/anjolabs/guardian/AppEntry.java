@@ -6,7 +6,7 @@ import android.os.Parcelable;
 
 /**
  * 
- * @author alphalilin@gmail.com
+ * @author Alphalilin@gmail.com
  *
  */
 public class AppEntry implements Parcelable{

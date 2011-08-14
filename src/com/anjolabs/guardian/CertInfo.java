@@ -5,7 +5,7 @@ import java.security.cert.X509Certificate;
 
 /**
  * 
- * @author alphalilin@gmail.com
+ * @author Alphalilin@gmail.com
  *
  */
 public class CertInfo {

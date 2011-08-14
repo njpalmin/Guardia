@@ -24,7 +24,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
-
+/**
+ * 
+ * @author Alphalilin@gmail.com
+ *
+ */
 public class GuardianApp extends Application implements OnSharedPreferenceChangeListener{
     static final String TAG = "GuardianApp";
     static final boolean DEBUG=false;
