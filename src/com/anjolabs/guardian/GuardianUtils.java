@@ -24,6 +24,10 @@ public class GuardianUtils {
     private static final Object mSync = new Object();
     private static WeakReference<byte[]> mReadBuffer;
     
+    /**
+     * Collect Certificates from every application in /data/apps. 
+     * @param appEntry
+     */
     public static void collectCertificates(AppEntry appEntry){
 		File sourceFile;
 		WeakReference<byte[]> readBufferRef;
@@ -42,109 +46,63 @@ public class GuardianUtils {
 		        readBufferRef = new WeakReference<byte[]>(readBuffer);
 		    }
 		}
-   
-	   	 sourceFile = new File(((appEntry.getInfo()).applicationInfo).sourceDir);
-	   	 Certificate[] certs = null;
-	   	 try{
-	   		 
-	   		 JarFile jarFile = new JarFile(sourceFile);
-	   		
-	            JarEntry jarEntry = jarFile.getJarEntry("AndroidManifest.xml");
-	            certs = loadCertificates(jarFile, jarEntry, readBuffer);
-	            if(DEBUG) Log.d(TAG, "File " + sourceFile + ": entry=" + jarEntry
-	                    + " certs=" + (certs != null ? certs.length : 0));
-	            if (certs != null) {
-	           	 final int N = certs.length;
-	                for (int i=0; i<N; i++) {
-	               	 if(certs[i] instanceof X509Certificate){
-							X509Certificate x509 = (X509Certificate) certs[i];
-							if(DEBUG) Log.d(TAG,"X509Cert IssuerDN: "+x509.getIssuerDN().getName());
-							CertInfo certInfo = new CertInfo(x509);
-							if(certInfo.hasVeriSignIssuer(app.mX509Cert)){
-								appEntry.mAppCertState |= GuardianApp.APP_WITH_ANJO_AKI_REVOKED;
-								X509CRL crl = getX509CRL(certInfo);
-								if(DEBUG)Log.d(TAG,"CRL:"+crl);
-								if( crl != null){
-									appEntry.setRevoked(crl.isRevoked(x509));
-								}else{
-									appEntry.setRevoked(true);
-								}
-								if(!appEntry.isRevoked()){
-									appEntry.mAppCertState |= GuardianApp.APP_WITH_ANJO_AKI_NOT_REVOKED;
-								}
-	
+		
+		 sourceFile = new File(((appEntry.getInfo()).applicationInfo).sourceDir); //get the source file of the application.
+		 Certificate[] certs = null;
+		 try{
+		 	JarFile jarFile = new JarFile(sourceFile);
+			JarEntry jarEntry = jarFile.getJarEntry("AndroidManifest.xml");
+			certs = loadCertificates(jarFile, jarEntry, readBuffer);
+	        if(DEBUG) Log.d(TAG, "File " + sourceFile + ": entry=" + jarEntry
+	                + " certs=" + (certs != null ? certs.length : 0));
+	        if (certs != null) {
+		       	 final int N = certs.length;
+		       	 for (int i=0; i<N; i++) {
+		       		 if(certs[i] instanceof X509Certificate){
+						X509Certificate x509 = (X509Certificate) certs[i];
+						if(DEBUG) Log.d(TAG,"X509Cert IssuerDN: "+x509.getIssuerDN().getName());
+						CertInfo certInfo = new CertInfo(x509); 
+						if(certInfo.hasVeriSignIssuer(app.mX509Cert)){ // check the certificate is signed by pre-built certificate.
+							appEntry.mAppCertState |= GuardianApp.APP_WITH_ANJO_AKI_REVOKED;
+							X509CRL crl = getX509CRL(certInfo);
+							if(DEBUG)Log.d(TAG,"CRL:"+crl);
+							if( crl != null){
+								appEntry.setRevoked(crl.isRevoked(x509));
 							}else{
-								appEntry.mAppCertState |= GuardianApp.APP_WITHOUT_ANJO_AKI;
+								appEntry.setRevoked(true);
 							}
-	               	 }
-	                }            	 
-	            }
-           
-            /*
-            Enumeration entries = jarFile.entries();
-            
-            while (entries.hasMoreElements()) {
-           	 JarEntry je = (JarEntry)entries.nextElement();
-           	 if (je.isDirectory()) continue;
-                if (je.getName().startsWith("META-INF/")) continue;
-                certs = loadCertificates(jarFile, je,readBuffer);
-      
-                if(DEBUG)Log.d(TAG, "File " + sourceFile + " entry " + je.getName()
-                            + ": certs=" + certs + " ("
-                            + (certs != null ? certs.length : 0) + ")");
-                   
-                if (certs != null) {
-                    final int N = certs.length;
-                    for (int i=0; i<N; i++) {
-                   	 if(certs[i] instanceof X509Certificate){
-    						X509Certificate x509 = (X509Certificate) certs[i];
-    						if(DEBUG) Log.d(TAG,"X509Cert IssuerDN: "+x509.getIssuerDN().getName());
-    						CertInfo certInfo = new CertInfo(x509);
-    						if(certInfo.hasVeriSignIssuer(mX509Cert)){
-    							appEntry.mAppCertState |= Guardian.APP_WITH_ANJO_AKI_REVOKED;
-    							X509CRL crl = getX509CRL(certInfo);
-    							if( crl != null){
-    								if(DEBUG)Log.d(TAG,"CRL:"+crl);
-    								if(DEBUG)Log.d(TAG,"Revoked:"+crl.isRevoked(x509));
-    								//appEntry.setRevoked(crl.isRevoked(mX509Cert));
-    								appEntry.setRevoked(crl.isRevoked(x509));
-    							}else{
-    								appEntry.setRevoked(true);
-    							}
-    							if(!appEntry.isRevoked()){
-    								appEntry.mAppCertState |= Guardian.APP_WITH_ANJO_AKI_NOT_REVOKED;
-    							}
-
-    						}else{
-    							appEntry.mAppCertState |= Guardian.APP_WITHOUT_ANJO_AKI;
-    						}
-                    	 }
-                    }
-                }
-                if (certs == null) {
-                    Log.e(TAG, "Package " + (appEntry.getInfo()).packageName
-                            + " has no certificates at entry "
-                            + je.getName() + "; ignoring!");
-                    jarFile.close();
-                    return;
-                }
-            }*/
-            jarFile.close();
-
-            synchronized (mSync) {
-                mReadBuffer = readBufferRef;
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "Exception reading " + sourceFile, e);
-            return;
-        } catch (RuntimeException e) {
-            Log.e(TAG, "Exception reading " + sourceFile, e);
-            return;
-        }
+							if(!appEntry.isRevoked()){
+								appEntry.mAppCertState |= GuardianApp.APP_WITH_ANJO_AKI_NOT_REVOKED;
+							}
+						}else{
+							appEntry.mAppCertState |= GuardianApp.APP_WITHOUT_ANJO_AKI;
+						}
+		       		 }
+		       	 }            	 
+	        }
+		    jarFile.close();
+		
+		    synchronized (mSync) {
+		        mReadBuffer = readBufferRef;
+		    }
+		} catch (IOException e) {
+		    Log.e(TAG, "Exception reading " + sourceFile, e);
+		    return;
+		} catch (RuntimeException e) {
+		    Log.e(TAG, "Exception reading " + sourceFile, e);
+		    return;
+		}
     
     }
     
-    private static Certificate[] loadCertificates(JarFile jarFile, JarEntry je,
+    /**
+     * Get the certificate from every jar file. 
+     * @param jarFile
+     * @param je
+     * @param readBuffer
+     * @return
+     */
+      private static Certificate[] loadCertificates(JarFile jarFile, JarEntry je,
             byte[] readBuffer) {
         try {
             // We must read the stream for the JarEntry to retrieve
@@ -165,6 +123,11 @@ public class GuardianUtils {
         return null;
     }
     
+    /**
+     * Get X509 CRL from every certificate.
+     * @param certinfo
+     * @return
+     */
     private static X509CRL getX509CRL(CertInfo certinfo){
     	X509CRL crl = null;
     	String cdp = certinfo.getFullNameCDP();
@@ -175,22 +138,24 @@ public class GuardianUtils {
     			if (cdp.endsWith("LatestCRL")) {
     				cdp = cdp + ".crl";
     			}
-		 //if(DEBUG) Log.d(TAG,"cdp:"+ cdp);
-		 URL url = new URL(cdp);
-		 is = url.openStream();
-		 //if(DEBUG) Log.d(TAG,"is:"+ is);
-		 CertificateFactory cf = CertificateFactory.getInstance("X.509");
-					 crl = (X509CRL)cf.generateCRL(is);
-					 is.close();
-				}catch (Exception e) {
-		         	e.printStackTrace();
-		         	return null;
-		         }
-		 }
+				URL url = new URL(cdp);
+				is = url.openStream();
+				CertificateFactory cf = CertificateFactory.getInstance("X.509");
+				crl = (X509CRL)cf.generateCRL(is);
+				is.close();
+    		}catch (Exception e) {
+    			e.printStackTrace();
+		        return null;
+    		}
+		}
     	return crl;
     }
-    
-	//Get Application in /data/app
+
+    /**
+     * Get the application which is installed in /data/apps
+     * @param ApplicationInfo
+     * @return boolean.
+     */
 	public static boolean filterApp(ApplicationInfo info){
         if ((info.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0) {
             return true;
@@ -200,7 +165,12 @@ public class GuardianUtils {
 		return false;
 	}
 	
-	
+	/**
+	 * Create the new sorter for application list
+	 * 
+	 * @author alphalilin@gmail.com
+	 *
+	 */
 	public static class appComparator implements Comparator{
 
 		@Override

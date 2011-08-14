@@ -13,9 +13,14 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+/**
+ * Activity to show the application details.
+ * @author alphalilin@gmail.com
+ *
+ */
 public class AppDetailActivity extends Activity{
 	static final String TAG = "AppDetailActivity";
-	static final boolean DEBUG=MainMenuActivity.DEBUG;
+	static final boolean DEBUG=GuardianApp.DEBUG;
 	
 	private AppEntry mAppEntry;
 	private PackageManager mPm;
@@ -32,8 +37,7 @@ public class AppDetailActivity extends Activity{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		
-		
+	
 		setContentView(R.layout.app_entry_detail);
 		Intent intent = getIntent();
 		Bundle bundle = intent.getExtras();
@@ -44,6 +48,9 @@ public class AppDetailActivity extends Activity{
 
 	}
 	
+	/**
+	 * Initialize layout.
+	 */
 	void initScreen(){
 		mIcon = (ImageView)findViewById(R.id.app_icon0);
 		mCheckBox = (ImageView)findViewById(R.id.app_checkbox);
@@ -73,7 +80,6 @@ public class AppDetailActivity extends Activity{
 				mAppRevoked.setTextColor(Color.YELLOW);
 			}
 			
-			
 			String versionName = getString(R.string.version) + " "+mAppEntry.getInfo().versionName; 
 			mAppVersion.setText(versionName);
 			
@@ -83,6 +89,11 @@ public class AppDetailActivity extends Activity{
 	                finish();
 	            }
 	        });
+			
+			/**
+			 * start to uninstall the application.
+			 * Send the intent to package manager to uninstall package.
+			 */
 			mUninstall.setOnClickListener(new View.OnClickListener() {
 	            public void onClick(View v) {
 	                if(DEBUG) Log.d(TAG, "mCancel clicked");
@@ -90,19 +101,9 @@ public class AppDetailActivity extends Activity{
 	                Uri packageURI = Uri.parse("package:"+pakcageName);
 	                Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, packageURI);
 	                startActivity(uninstallIntent);
-	                //finish();
 	            }
 	        });
 		}
 	}
 	
-	@Override
-	protected void onStop(){
-		super.onStop();
-	}
-	
-	@Override
-	protected void onDestroy(){
-		super.onDestroy();
-	}
 }

@@ -3,18 +3,23 @@ package com.anjolabs.guardian;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
 
-import android.util.Log;
-
+/**
+ * 
+ * @author alphalilin@gmail.com
+ *
+ */
 public class CertInfo {
 	final static String TAG = MainMenuActivity.TAG;
 	final static boolean DEBUG = MainMenuActivity.DEBUG;
 
 	private X509Certificate mX509Cert;
     private boolean httpCDP, ldapCDP;
-    private boolean httpAIA, ldapAIA;
-    private String  fullNameCDP, aiaLocation;
+    private String  fullNameCDP;
     
-
+    /**
+     * Constructor, get the cdp of every certificate instance.
+     * @param cert
+     */
 	public 	CertInfo(X509Certificate cert){
     	mX509Cert = cert;
     	byte[] cdp = cert.getExtensionValue("2.5.29.31");
@@ -42,6 +47,10 @@ public class CertInfo {
     	}
     }
 	
+	/**
+	 * Get full Name CDP
+	 * @return full name CDP
+	 */
     public String getFullNameCDP() {
 		return fullNameCDP;
 	}
@@ -61,6 +70,11 @@ public class CertInfo {
     	return ldapCDP;
     }
     
+    /**
+     * returns ture if this certificate is signed by the given certificate.
+     * @param cert
+     * @return
+     */
     public boolean hasVeriSignIssuer(X509Certificate cert)
     {
         return mX509Cert.getIssuerDN().equals(cert.getSubjectDN());

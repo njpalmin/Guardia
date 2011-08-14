@@ -1,41 +1,34 @@
 package com.anjolabs.guardian;
 
-
-import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
-
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
-import android.content.pm.Signature;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+/**
+ * 
+ * @author alphalilin@gmail.com
+ *
+ */
 public class AppEntry implements Parcelable{
 	static final String TAG = MainMenuActivity.TAG;
 	static final boolean DEBUG=MainMenuActivity.DEBUG;
 	
 	private PackageInfo mInfo;
-	//private boolean trusted;
-	//private Certificate [] mCerts;
-	//public Signature mSignatures[];
-	//private CertInfo mCertInfo;
 	public int mAppCertState;
 	private boolean isRevoked;
 	
-	//public X509CRL mX509Crl;
-	/*
-	public AppEntry(ApplicationInfo info){
-		//mInfo = info;
-		//trusted = true;
-		//mCerts = null;
-		//mSignatures = null;
-		mAppCertState = Guardian.APP_WITHOUT_ANJO_AKI;
-	}*/
-	
+	/**
+	 * return true if application is revoked.
+	 * @return
+	 */
 	public boolean isRevoked() {
 		return isRevoked;
 	}
 
+	/**
+	 * Set application revoked state.
+	 * @param isRevoked
+	 */
 	public void setRevoked(boolean isRevoked) {
 		this.isRevoked = isRevoked;
 	}
@@ -47,45 +40,32 @@ public class AppEntry implements Parcelable{
 	public PackageInfo getInfo() {
 		return mInfo;
 	}
-	/*
-	public void setInfo(ApplicationInfo info) {
-		this.mInfo = info;
-	}
 
-	public boolean isTrusted() {
-		return trusted;
-	}
-
-	public void setTrusted(boolean trusted) {
-		this.trusted = trusted;
-	}
-
-	public Certificate[] getCerts() {
-		return mCerts;
-	}
-
-	public CertInfo getCertInfo() {
-		return mCertInfo;
-	}
-
-	public void setCertInfo(CertInfo certInfo) {
-		this.mCertInfo = certInfo;
-	}
-*/
-
+    /**
+     * Describe the kinds of special objects contained in this Parcelable's
+     * marshalled representation.
+     *  
+     * @return a bitmask indicating the set of special object types marshalled
+     * by the Parcelable.
+     */
 	@Override
 	public int describeContents() {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
+    /**
+     * Flatten this object in to a Parcel.
+     * 
+     * @param dest The Parcel in which the object should be written.
+     * @param flags Additional flags about how the object should be written.
+     * May be 0 or {@link #PARCELABLE_WRITE_RETURN_VALUE}.
+     */
 	@Override
 	public void writeToParcel(Parcel dest, int parcelableFlags) {
 		// TODO Auto-generated method stub
 		  dest.writeInt(mAppCertState);
-		  //dest.writeBooleanArray(new boolean[] {isRevoked});
 		  dest.writeInt(isRevoked ? 0 : 1 );
-		  //dest.writeBooleanArray(isRevoked);
 		  if (mInfo != null) {
 	            dest.writeInt(1);
 	            mInfo.writeToParcel(dest, parcelableFlags);
@@ -93,6 +73,7 @@ public class AppEntry implements Parcelable{
 	            dest.writeInt(0);
 	      }
 	}
+	
 	private AppEntry(Parcel source){
 		mAppCertState=source.readInt();
 		isRevoked = source.readInt() == 0;
@@ -102,6 +83,10 @@ public class AppEntry implements Parcelable{
 		}
 	}
 	
+    /**
+     * Interface that must be implemented and provided as a public CREATOR
+     * field that generates instances of your Parcelable class from a Parcel.
+     */
     public static final Parcelable.Creator<AppEntry> CREATOR = new Parcelable.Creator<AppEntry>() {
     	public AppEntry createFromParcel(Parcel source) {
     		return new AppEntry(source);

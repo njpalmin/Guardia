@@ -20,7 +20,7 @@
     <string name="ok">Ok</string>
     <string name="run">Run Manual Check</string>
     <string name="set">Set Checking Interval (Minutes)</string>
-    <string name="anjo_check">Only Display Apps Singed By Anjo</string>
+    <string name="anjo_check">Only Display Apps Signed By Anjo</string>
     <string name="exit">Exit to Background</string>
     
 </resources>

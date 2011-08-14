@@ -25,6 +25,10 @@ import android.widget.Toast;
 
 import com.anjolabs.guardian.GuardianUtils.appComparator;
 
+/*
+ * MainMenuActivity is the main entry of Guardian application, and it's the only one.
+ * In MainMenuActivity, it describes the layout of the main menu.
+ */
 public class MainMenuActivity extends Activity implements OnSharedPreferenceChangeListener{
     static final String TAG = "MainMenuActivity";
     static final boolean DEBUG = GuardianApp.DEBUG;
@@ -67,6 +71,9 @@ public class MainMenuActivity extends Activity implements OnSharedPreferenceChan
         }
     }
 	
+	/*
+	 * This is  main menu layout initialization.
+	 */
 	void initView(){
         mRunButton = (ImageButton)findViewById(R.id.run);
         mSetButton = (ImageButton)findViewById(R.id.set);
@@ -75,14 +82,8 @@ public class MainMenuActivity extends Activity implements OnSharedPreferenceChan
         mRunButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if(DEBUG) Log.d(TAG, "mRunButton clicked");
-    
-                if(isOnline()){
-                	new getPkgListTask().execute();
-                }else{
-                	Toast toast;
-                	toast=Toast.makeText(mContext,"Can't connect to Internet,please check!",2);
-                	toast.show();
-                }
+                
+                new getPkgListTask().execute();
             }
         });
         
@@ -103,12 +104,10 @@ public class MainMenuActivity extends Activity implements OnSharedPreferenceChan
         
 	}
 	
-	@Override
-    protected void onResume(){
-		if(DEBUG) Log.d(TAG,"onResume");
-		super.onResume();
-	}
-	
+	/**
+	 * (non-Javadoc)
+	 * @see android.app.Activity#onDestroy()
+	 */
 	@Override
     protected void onDestroy() {
 		if(DEBUG) Log.d(TAG,"onDestroy");
@@ -116,25 +115,47 @@ public class MainMenuActivity extends Activity implements OnSharedPreferenceChan
 		mPrefs.unregisterOnSharedPreferenceChangeListener(this);
 	}
 	
-	
-	
+	/**
+	 * getPkgListTask is the background task when user pressing "Run Manual Check" button.
+	 * This is background thread to get the applications certificates info, and show the progress bar
+	 * in the main Thread. 
+	 */
 	public class getPkgListTask extends AsyncTask<Void, Integer, List<AppEntry>>{
 		int mProgress;
 		ProgressBar mProgressBar;
 		TextView mProgressText;
 		
+		/**
+		 * Constructor, init progress bar and text.
+		 */
 		public getPkgListTask(){
 			super();
 			mProgressBar = (ProgressBar)findViewById(R.id.progress);
 			mProgressText = (TextView)findViewById(R.id.progress_percentage);
 		}
 		
+	    /**
+	     * Runs on the UI thread before {@link #doInBackground}.
+	     *
+	     */
 		protected void onPreExecute(){
 			mProgress = 0;
 			mProgressBar.setProgress(0);
 			mRunButton.setClickable(false);
 		}
-
+		
+		/**
+		 * Override this method to perform a computation on a background thread. The
+	     * specified parameters are the parameters passed to {@link #execute}
+	     * by the caller of this task.
+	     *
+	     * This method can call {@link #publishProgress} to publish updates
+	     * on the UI thread.
+	     *
+	     * @param params The parameters of the task.
+	     *
+	     * @return A result, defined by the subclass of this task.
+	     */
 		@Override
 		protected  List<AppEntry> doInBackground(Void... params) {
 			// TODO Auto-generated method stub
@@ -145,6 +166,10 @@ public class MainMenuActivity extends Activity implements OnSharedPreferenceChan
 			mPackages = mPm.getInstalledPackages(0);
 			if(DEBUG)Log.d(TAG,"mPackages size="+mPackages.size());
 			
+			/*
+			 * Get the packages in /data/apps.. and check these applications certificates information.
+			 * Add these applications in another list by the special order.
+			 */
 			for(int i=0;i<mPackages.size();i++){
 				if(GuardianUtils.filterApp(mPackages.get(i).applicationInfo)){
 					mAppEntry = new AppEntry(mPackages.get(i));
@@ -159,18 +184,24 @@ public class MainMenuActivity extends Activity implements OnSharedPreferenceChan
 						mAppList.add(mAppEntry);
 					}
 					mAppEntry = null;
-					//Collections.sort(mAppList, (new appComparator()));
 				}
+				
 				publishProgress((int) ((i / (float) mPackages.size()) * 100));
 			}
-			
-			//GuardianUtils.appComparator comparator = new GuardianUtils.appComparator ();
-			
 			Collections.sort(mAppList, (new appComparator()));
-			
+
 			return mAppList;
 		}
 		
+	    /**
+	     * Runs on the UI thread after {@link #publishProgress} is invoked.
+	     * The specified values are the values passed to {@link #publishProgress}.
+	     *
+	     * @param values The values indicating progress.
+	     *
+	     * @see #publishProgress
+	     * @see #doInBackground
+	     */
 		@Override 
 		protected void onProgressUpdate(Integer... values){
 			mProgressBar.setProgress(values[0]);
@@ -178,6 +209,16 @@ public class MainMenuActivity extends Activity implements OnSharedPreferenceChan
 			mProgressText.setText(progressText);
 		}
 		
+	    /**
+	     * Runs on the UI thread after {@link #doInBackground}. The
+	     * specified result is the value returned by {@link #doInBackground}
+	     * or null if the task was cancelled or an exception occured.
+	     *
+	     * @param result The result of the operation computed by {@link #doInBackground}.
+	     *
+	     * @see #onPreExecute
+	     * @see #doInBackground
+	     */
 		@Override
 		protected void onPostExecute(List<AppEntry> application){
 			CharSequence progressText = getString(R.string.finish)+" 100%";
@@ -186,24 +227,35 @@ public class MainMenuActivity extends Activity implements OnSharedPreferenceChan
 			mRunButton.setClickable(true);
 			if(DEBUG) Log.d(TAG,"onPostExecute application size="+application.size());
 
+			/**
+			 * Start the activity to list the parsed applications.
+			 */
 			Intent intent = new Intent(MainMenuActivity.this, PackageListActivity.class);
 			intent.putParcelableArrayListExtra(GuardianApp.APPS_LIST,mAppList);
 			startActivity(intent);
 
 		}
 	}
-    
-     private boolean isOnline() {
-    	 ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-    	 return cm.getActiveNetworkInfo().isConnectedOrConnecting();
-
-     }
       	
+	/**
+	 * Load the settings values(interval and anjo check) from shared preferences.
+	 */
  	private void loadSharedPreferences(){
 		mInterval = mPrefs.getInt(GuardianApp.PREFS_INTERVAL,GuardianApp.DEFAULT_CHECK_INTERVAL);
 		mAnjoCheck = mPrefs.getBoolean(GuardianApp.PREFS_ANJOCHECK,true);
  	}
 
+    /**
+     * Called when a shared preference is changed, added, or removed. This
+     * may be called even if a preference is set to its existing value.
+     *
+     * <p>This callback will be run on your main thread.
+     *
+     * @param sharedPreferences The {@link SharedPreferences} that received
+     *            the change.
+     * @param key The key of the preference that was changed, added, or
+     *            removed.
+     */
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 		// TODO Auto-generated method stub

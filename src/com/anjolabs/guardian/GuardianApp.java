@@ -67,6 +67,9 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
         return sMe;
     }
     
+    /**
+     * This handler is used to start a checking thread to parse packages.
+     */
     private Handler mHandler = new Handler(){
     	@Override
     	public void handleMessage(Message msg) {
@@ -90,6 +93,9 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
     	}
     };
     
+    /**
+     * This task is used to update package list.
+     */
     private Runnable mUpdatePkgListTask = new Runnable() {  
   	  
         public void run() {  
@@ -116,6 +122,14 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
 		}
     };
     
+    /**
+     * Called when the application is starting, before any other application
+     * objects have been created.  Implementations should be as quick as
+     * possible (for example using lazy initialization of state) since the time
+     * spent in this function directly impacts the performance of starting the
+     * first activity, service, or receiver in a process.
+     * If you override this method, be sure to call super.onCreate().
+     */
     @Override
     public void onCreate(){
     	if(DEBUG) Log.d(TAG,"onCreate....");
@@ -131,6 +145,9 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
         mPrefs.registerOnSharedPreferenceChangeListener(this);
         onSharedPreferenceChanged(mPrefs,null);
         
+        /**
+         * Get the pre-built certificate. 
+         */
         InputStream is = null;
         try{
         	is = getResources().openRawResource(R.raw.anjoprivateca01);
@@ -149,22 +166,36 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
     	
         mPm = getPackageManager();
         
+        /**
+         * Also start the monitor thread.
+         */
 		Message msg = Message.obtain(mHandler,START_UPDATE,0,0);
         mHandler.sendMessage(msg);
     }
     
-    
+    /**
+     * Read the settings values(interval and anjo check) from sharedPrefrences.
+     */
 	private void loadSharedPreferences(){
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 		mInterval = mPrefs.getInt(PREFS_INTERVAL,GuardianApp.DEFAULT_CHECK_INTERVAL);
 		mAnjoCheck = mPrefs.getBoolean(PREFS_ANJOCHECK,true);
 	}
 	
+	/**
+	 * When time interval is timeout, it will start the thread to parse the applications and get the certificate information.
+	 */
 	private void startPkgListActivity(){
 		if(DEBUG)Log.d(TAG,"startPkgListActivity");
 		new updatePacakgeListTask(this).execute();
 	}
 	
+	/**
+	 * 
+	 * This task to background task to check applications in /data/apps and collect their certificates information.
+	 * @author alphalilin@gmail.com
+	 *
+	 */
 	public class updatePacakgeListTask extends AsyncTask<Void, Integer, ArrayList<AppEntry>>{
 		private Context mContext;
 		
@@ -173,9 +204,25 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
 			mContext = context;
 		}
 		
+	    /**
+	     * Runs on the UI thread before {@link #doInBackground}.
+	     *
+	     */
 		protected void onPreExecute(){
 		}
 	
+		/**
+		 * Override this method to perform a computation on a background thread. The
+	     * specified parameters are the parameters passed to {@link #execute}
+	     * by the caller of this task.
+	     *
+	     * This method can call {@link #publishProgress} to publish updates
+	     * on the UI thread.
+	     *
+	     * @param params The parameters of the task.
+	     *
+	     * @return A result, defined by the subclass of this task.
+	     */
 		@Override
 		protected  ArrayList<AppEntry> doInBackground(Void... params) {
 			// TODO Auto-generated method stub
@@ -203,6 +250,16 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
 			return appList;
 		}
 		
+	    /**
+	     * Runs on the UI thread after {@link #doInBackground}. The
+	     * specified result is the value returned by {@link #doInBackground}
+	     * or null if the task was cancelled or an exception occured.
+	     *
+	     * @param result The result of the operation computed by {@link #doInBackground}.
+	     *
+	     * @see #onPreExecute
+	     * @see #doInBackground
+	     */
 		@Override
 		protected void onPostExecute(ArrayList<AppEntry> appList){
 			Intent intent = new Intent(mContext, PackageListActivity.class);
@@ -212,6 +269,17 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
 		}
 	}
 
+    /**
+     * Called when a shared preference is changed, added, or removed. This
+     * may be called even if a preference is set to its existing value.
+     *
+     * <p>This callback will be run on your main thread.
+     *
+     * @param sharedPreferences The {@link SharedPreferences} that received
+     *            the change.
+     * @param key The key of the preference that was changed, added, or
+     *            removed.
+     */
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 		// TODO Auto-generated method stub
@@ -221,7 +289,11 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
 			return;
 		}
 		
+		
 		if(key.equals(PREFS_INTERVAL)){
+			/**
+			 * reset time interval.
+			 */
 			mInterval = prefs.getInt(PREFS_INTERVAL,GuardianApp.DEFAULT_CHECK_INTERVAL);
 			Message msg = Message.obtain(mHandler,RESET_TIME_INTERVAL,mInterval,0);
 			mHandler.sendMessage(msg);
