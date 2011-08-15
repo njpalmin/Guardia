@@ -8,9 +8,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.anjolabs.guardian.GuardianUtils.appComparator;
-
 import android.app.Application;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -24,6 +25,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
+import com.anjolabs.guardian.GuardianUtils.appComparator;
 /**
  * 
  * @author Alphalilin@gmail.com
@@ -57,11 +60,14 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
     
     private static GuardianApp sMe;
     private Context mContext;
+    private boolean  mRevokedFound = false;
     public int mInterval;
     public boolean mAnjoCheck;
     public X509Certificate  mX509Cert; 
     public PackageManager mPm;
     public SharedPreferences mPrefs;
+    public NotificationManager mNm;
+    
     
     public GuardianApp() {
         sMe = this;
@@ -169,6 +175,7 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
         }
     	
         mPm = getPackageManager();
+        mNm = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
         
         /**
          * Also start the monitor thread.
@@ -193,7 +200,35 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
 		if(DEBUG)Log.d(TAG,"startPkgListActivity");
 		new updatePacakgeListTask(this).execute();
 	}
-	
+
+	/**
+	 * 
+	 */
+	private void showNotification(PendingIntent pendingIntent){
+		if(DEBUG)Log.d(TAG,"showNotification pendingIntent="+pendingIntent);
+		
+		Notification notification=null;
+		String text=null;
+		
+		if(mRevokedFound){
+		    notification = new Notification(
+	                R.drawable.statusbarred,
+	                getText(R.string.revoked_notification), 0);
+		    text = getText(R.string.revoked_notification).toString();
+		}else{
+		    notification = new Notification(
+	                R.drawable.statusbar,
+	                getText(R.string.verified_notification), 0);
+		    text = getText(R.string.verified_notification).toString();
+		}
+		
+		notification.setLatestEventInfo(mContext, text, 
+									getText(R.string.notification_text),pendingIntent);
+		
+		if(mNm != null){
+			mNm.notify(R.string.revoked_notification, notification);
+		}
+    }
 	/**
 	 * 
 	 * This task to background task to check applications in /data/apps and collect their certificates information.
@@ -236,10 +271,17 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
 			ArrayList<AppEntry> appList = new ArrayList<AppEntry>();
 			List<PackageInfo> mPackages =mPm.getInstalledPackages(0);
 			
+			mRevokedFound = false;
+			
 			for(int i=0;i<mPackages.size();i++){
 				if(GuardianUtils.filterApp(mPackages.get(i).applicationInfo)){
 					AppEntry appEntry = new AppEntry(mPackages.get(i));
 					GuardianUtils.collectCertificates(appEntry);
+					
+					if(((appEntry.mAppCertState & APP_WITH_ANJO_AKI_REVOKED) != 0) && !mRevokedFound ){
+						mRevokedFound = true; 
+					}
+					
 					if(mAnjoCheck){
 						if((appEntry.mAppCertState & (APP_WITH_ANJO_AKI_NOT_REVOKED|APP_WITH_ANJO_AKI_REVOKED)) != 0){
 							appList.add(appEntry);
@@ -269,7 +311,8 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
 			Intent intent = new Intent(mContext, PackageListActivity.class);
 			intent.putParcelableArrayListExtra(APPS_LIST,appList);
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			startActivity(intent);
+			PendingIntent pendingIntent = PendingIntent.getActivity(mContext,0,intent,0);
+			showNotification(pendingIntent);
 		}
 	}
 

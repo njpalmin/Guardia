@@ -22,5 +22,9 @@
     <string name="set">Set Checking Interval (Minutes)</string>
     <string name="anjo_check">Only Display Apps Signed By Anjo</string>
     <string name="exit">Exit to Background</string>
+    <string name="revoked_notification">"Revoked Developer Found"</string>
+    <string name="verified_notification">"All Developers Verified"</string>
+    <string name="notification_text">"Click here to open list"</string>
+    <string name="notification_title">"Guardian Notification"</string>
     
 </resources>
