@@ -210,12 +210,9 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
 	private void showNotification(PendingIntent pendingIntent){
 		if(DEBUG)Log.d(TAG,"showNotification pendingIntent="+pendingIntent);
 		
-		RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.guardina_notification);
-		
 		Notification notification=new Notification();
 		String text=null;
-		
-		
+
 		if(mRevokedFound){
 		    notification = new Notification(
 	                R.drawable.statusbarred,
