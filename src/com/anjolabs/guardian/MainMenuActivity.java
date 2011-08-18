@@ -180,7 +180,7 @@ public class MainMenuActivity extends Activity implements OnSharedPreferenceChan
 					if(DEBUG) Log.d(TAG,"AppEntry state"+mAppEntry.mAppCertState);
 					if(mAnjoCheck){
 						if((mAppEntry.mAppCertState & (GuardianApp.APP_WITH_ANJO_AKI_NOT_REVOKED 
-														| GuardianApp.APP_WITH_ANJO_AKI_REVOKED)) != 0){
+														| GuardianApp.APP_WITH_ANJO_AKI)) != 0){
 							mAppList.add(mAppEntry);
 						}
 					}else{
@@ -233,6 +233,7 @@ public class MainMenuActivity extends Activity implements OnSharedPreferenceChan
 			/**
 			 * Start the activity to list the parsed applications.
 			 */
+			if(DEBUG) Log.d(TAG,"mAppList  ="+mAppList);
 			Intent intent = new Intent(MainMenuActivity.this, PackageListActivity.class);
 			intent.putParcelableArrayListExtra(GuardianApp.APPS_LIST,mAppList);
 			startActivity(intent);

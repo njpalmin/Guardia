@@ -25,6 +25,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 import com.anjolabs.guardian.GuardianUtils.appComparator;
 /**
@@ -40,8 +41,8 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
     public static final String APPS_ENTRY = "com.anjolabs.guardian.appsentry";
     
     public final static int APP_WITHOUT_ANJO_AKI = 1<<0;
-    public final static int APP_WITH_ANJO_AKI_REVOKED = 1<<1;
-    public final static int APP_WITH_ANJO_AKI_NOT_REVOKED = 1<<2;
+    public final static int APP_WITH_ANJO_AKI_NOT_REVOKED = 1<<1;
+    public final static int APP_WITH_ANJO_AKI = 1<<2;
     
     //Intents
     public final static String GUARDIAN_RESET_INTERVAL_ACTION="com.anjolabs.guardian.GUARDIAN_RESET_INTERVAL_ACTION";
@@ -51,6 +52,8 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
     public final static String PREFS_ANJOCHECK ="prefs_anjocheck";
     
     public static int DEFAULT_CHECK_INTERVAL = 60;//default 60 mins
+    
+    public static final String APP_CHG = "change";
     
     //Message codes mHandler use
     private static final int RESET_TIME_INTERVAL = 100;
@@ -142,7 +145,7 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
      */
     @Override
     public void onCreate(){
-    	if(DEBUG) Log.d(TAG,"onCreate....");
+    	if(DEBUG) Log.d(TAG,"GuardianApp onCreate....");
     	super.onCreate();
     	mContext = getApplicationContext();
     	
@@ -207,18 +210,21 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
 	private void showNotification(PendingIntent pendingIntent){
 		if(DEBUG)Log.d(TAG,"showNotification pendingIntent="+pendingIntent);
 		
-		Notification notification=null;
+		RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.guardina_notification);
+		
+		Notification notification=new Notification();
 		String text=null;
+		
 		
 		if(mRevokedFound){
 		    notification = new Notification(
 	                R.drawable.statusbarred,
-	                getText(R.string.revoked_notification), 0);
+	                getText(R.string.revoked_notification), System.currentTimeMillis());
 		    text = getText(R.string.revoked_notification).toString();
 		}else{
 		    notification = new Notification(
 	                R.drawable.statusbar,
-	                getText(R.string.verified_notification), 0);
+	                getText(R.string.verified_notification), System.currentTimeMillis());
 		    text = getText(R.string.verified_notification).toString();
 		}
 		
@@ -278,21 +284,29 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
 					AppEntry appEntry = new AppEntry(mPackages.get(i));
 					GuardianUtils.collectCertificates(appEntry);
 					
-					if(((appEntry.mAppCertState & APP_WITH_ANJO_AKI_REVOKED) != 0) && !mRevokedFound ){
-						mRevokedFound = true; 
+					if(DEBUG) Log.d(TAG,"AppEntry state:"+appEntry.mAppCertState);
+					
+					if((appEntry.mAppCertState & APP_WITH_ANJO_AKI) != 0){
+						
+						if(!((appEntry.mAppCertState & APP_WITH_ANJO_AKI_NOT_REVOKED) != 0) && !mRevokedFound){
+							mRevokedFound = true;
+						}
 					}
 					
 					if(mAnjoCheck){
-						if((appEntry.mAppCertState & (APP_WITH_ANJO_AKI_NOT_REVOKED|APP_WITH_ANJO_AKI_REVOKED)) != 0){
+						if((appEntry.mAppCertState & (APP_WITH_ANJO_AKI_NOT_REVOKED|APP_WITH_ANJO_AKI)) != 0){
 							appList.add(appEntry);
 						}
 					}else{
 						appList.add(appEntry);
 					}
+					
+					appEntry = null;
 				}
 			}
 			Collections.sort(appList, (new appComparator()));
 			
+			if(DEBUG)Log.d(TAG,"mRevokedFound:"+mRevokedFound);
 			return appList;
 		}
 		
@@ -308,10 +322,11 @@ public class GuardianApp extends Application implements OnSharedPreferenceChange
 	     */
 		@Override
 		protected void onPostExecute(ArrayList<AppEntry> appList){
+			if(DEBUG)Log.d(TAG,"AppList:"+appList);
 			Intent intent = new Intent(mContext, PackageListActivity.class);
 			intent.putParcelableArrayListExtra(APPS_LIST,appList);
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			PendingIntent pendingIntent = PendingIntent.getActivity(mContext,0,intent,0);
+			//intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			PendingIntent pendingIntent = PendingIntent.getActivity(mContext,0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
 			showNotification(pendingIntent);
 		}
 	}

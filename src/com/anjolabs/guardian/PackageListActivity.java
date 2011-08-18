@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -27,10 +28,15 @@ public class PackageListActivity extends Activity implements OnItemClickListener
 	static final String TAG = "PackageListActivity";
 	static final boolean DEBUG=GuardianApp.DEBUG;
 	
+    // constant value that can be used to check return code from sub activity.
+    private static final int INSTALLED_APP_DETAILS = 1;
+
+    private boolean mActivityResumed;    
 	private PackageManager mPm;
 	private ListView mListView;
-	private List<AppEntry> mAppEntryList = new ArrayList<AppEntry>();
+	private ArrayList<AppEntry> mAppEntryList = new ArrayList<AppEntry>();
 	private AppEntryAdapter mAdapter;
+	private AppEntry mAppEntry;
 	private boolean mAnjoCheck;
 	
     /**
@@ -73,7 +79,8 @@ public class PackageListActivity extends Activity implements OnItemClickListener
 		}else{
 			Log.d(TAG,"CAN't find mAppEntryList");
 		}
-		
+		NotificationManager notificationManager =  (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+		notificationManager.cancel(R.string.revoked_notification);
 		setContentView(R.layout.guardian_packages_list);
 		mListView = (ListView) findViewById(R.id.list);
 		mListView.setOnItemClickListener(this);
@@ -98,20 +105,43 @@ public class PackageListActivity extends Activity implements OnItemClickListener
 		// TODO Auto-generated method stub
 
 		AppEntry appEntry;
-		appEntry = mAppEntryList.get(position);
-		if(DEBUG) Log.d(TAG,"AppEntry ="+ appEntry.getInfo().packageName+" position="+position);
+		mAppEntry = mAppEntryList.get(position);
+		if(DEBUG) Log.d(TAG,"AppEntry ="+ mAppEntry.getInfo().packageName+" position="+position);
 
 		/*
 		 * Start activity to show the application details information.
 		 * Pass the application data with bundle.
 		 */
+		/*
 		Intent intent = new Intent(this,AppDetailActivity.class);
 		Bundle bundle = new Bundle();
 		bundle.putParcelable(GuardianApp.APPS_ENTRY,appEntry);
 		intent.putExtras(bundle);
-		startActivity(intent);
+		startActivity(intent);*/
+		startApplicationDetailsActivity(mAppEntry);
 	}
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,
+            Intent data){
+    	if(DEBUG)Log.d(TAG,"onActivityResult requestCode = "+requestCode +" and resultCode = "+resultCode);
+    	if(requestCode == INSTALLED_APP_DETAILS && resultCode ==RESULT_OK){
+    		mAppEntryList.remove(mAppEntry);
+    		mAdapter.notifyDataSetChanged();
+    	}
+    }
+	/**
+	 * 
+	 * @param appEntry
+	 */
+	private void startApplicationDetailsActivity(AppEntry appEntry){
+		Intent intent = new Intent(this,AppDetailActivity.class);
+		Bundle bundle = new Bundle();
+		bundle.putParcelable(GuardianApp.APPS_ENTRY,appEntry);
+		intent.putExtras(bundle);
+		//startActivity(intent);
+		startActivityForResult(intent,INSTALLED_APP_DETAILS);
+	}
 
 	/*
 	 * Customized adapter for Guardian to list all parsed application.
@@ -162,13 +192,15 @@ public class PackageListActivity extends Activity implements OnItemClickListener
 			
 			holder.text.setText(appEntry.getInfo().applicationInfo.loadLabel(mPm));
 			holder.icon.setImageDrawable(appEntry.getInfo().applicationInfo.loadIcon(mPm));
-		
-			if ((appEntry.mAppCertState & GuardianApp.APP_WITH_ANJO_AKI_NOT_REVOKED) != 0){
+
+			if((appEntry.mAppCertState & GuardianApp.APP_WITH_ANJO_AKI) != 0 && ((appEntry.mAppCertState & GuardianApp.APP_WITH_ANJO_AKI_NOT_REVOKED) != 0)){
 				holder.checkbox.setImageResource(R.drawable.green);
-			}else if((appEntry.mAppCertState & GuardianApp.APP_WITH_ANJO_AKI_REVOKED) != 0){
-				holder.checkbox.setImageResource(R.drawable.red);
-			}else  if((appEntry.mAppCertState & GuardianApp.APP_WITHOUT_ANJO_AKI) != 0){
-				holder.checkbox.setImageResource(R.drawable.yellow);
+			}else {
+				if((appEntry.mAppCertState & GuardianApp.APP_WITHOUT_ANJO_AKI) != 0){
+					holder.checkbox.setImageResource(R.drawable.yellow);
+				}else{
+					holder.checkbox.setImageResource(R.drawable.red);
+				}
 			}	
 			
 			return convertView;
@@ -185,4 +217,24 @@ public class PackageListActivity extends Activity implements OnItemClickListener
             ImageView checkbox;
         }
 	}
+	
+	@Override
+    protected void onResume() {
+        super.onResume();
+        mActivityResumed = true;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mActivityResumed = false;
+    }
+        
+	@Override
+	protected void onDestroy(){
+		if(DEBUG)Log.d(TAG,"onDestroy");
+		super.onDestroy();
+		mAppEntryList = null;
+	}
+	
 }

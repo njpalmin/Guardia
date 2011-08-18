@@ -18,21 +18,21 @@
             </intent-filter>
         </activity>
 		
-		<activity android:name="PackageListActivity"
-				  android:launchMode="singleInstance"
-                  android:configChanges="keyboardHidden">
-        </activity>
+		<activity android:name="PackageListActivity"/>
 		
-		<activity android:name="AppDetailActivity"
-                  android:configChanges="keyboardHidden">
-        </activity>
+		<activity android:name="AppDetailActivity"/>
         
-        <activity android:name="SettingsActivity"
-                  android:configChanges="keyboardHidden">
-        </activity>
+        <activity android:name="SettingsActivity"/>
         
+		<receiver android:name="GuardianReceiver">
+			<intent-filter >
+				<action android:name="android.intent.action.BOOT_COMPLETED" />
+			</intent-filter>
+		</receiver>
+
     </application>
 
+	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 	<uses-permission android:name="android.permission.INTERNET" />

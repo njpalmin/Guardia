@@ -66,18 +66,21 @@ public class AppDetailActivity extends Activity{
 			mAppName.setText(mAppEntry.getInfo().applicationInfo.loadLabel(mPm));
 			mAppName1.setText(mAppEntry.getInfo().applicationInfo.loadLabel(mPm));
 			
-			if ((mAppEntry.mAppCertState & GuardianApp.APP_WITH_ANJO_AKI_NOT_REVOKED) != 0){
+			if ((mAppEntry.mAppCertState & GuardianApp.APP_WITH_ANJO_AKI) != 0 
+			 && (mAppEntry.mAppCertState & GuardianApp.APP_WITH_ANJO_AKI_NOT_REVOKED) != 0){
 				mCheckBox.setImageResource(R.drawable.green);
 				mAppRevoked.setText(getString(R.string.verified));
 				mAppRevoked.setTextColor(Color.GREEN);
-			}else if((mAppEntry.mAppCertState & GuardianApp.APP_WITH_ANJO_AKI_REVOKED) != 0){
-				mCheckBox.setImageResource(R.drawable.red);
-				mAppRevoked.setText(getString(R.string.revoked));
-				mAppRevoked.setTextColor(Color.RED);
-			}else  if((mAppEntry.mAppCertState & GuardianApp.APP_WITHOUT_ANJO_AKI) != 0){
-				mCheckBox.setImageResource(R.drawable.yellow);
-				mAppRevoked.setText(getString(R.string.non));
-				mAppRevoked.setTextColor(Color.YELLOW);
+			}else{
+				if((mAppEntry.mAppCertState & GuardianApp.APP_WITHOUT_ANJO_AKI) != 0){
+					mCheckBox.setImageResource(R.drawable.yellow);
+					mAppRevoked.setText(getString(R.string.non));
+					mAppRevoked.setTextColor(Color.YELLOW);
+				}else{
+					mCheckBox.setImageResource(R.drawable.red);
+					mAppRevoked.setText(getString(R.string.revoked));
+					mAppRevoked.setTextColor(Color.RED);
+				}
 			}
 			
 			String versionName = getString(R.string.version) + " "+mAppEntry.getInfo().versionName; 
@@ -96,14 +99,27 @@ public class AppDetailActivity extends Activity{
 			 */
 			mUninstall.setOnClickListener(new View.OnClickListener() {
 	            public void onClick(View v) {
-	                if(DEBUG) Log.d(TAG, "mCancel clicked");
+	                if(DEBUG) Log.d(TAG, "mUninstall clicked");
 	                String pakcageName = mAppEntry.getInfo().packageName;
 	                Uri packageURI = Uri.parse("package:"+pakcageName);
 	                Intent uninstallIntent = new Intent(Intent.ACTION_DELETE, packageURI);
 	                startActivity(uninstallIntent);
+	                setIntentAndFinish(true, true);
 	            }
 	        });
 		}
 	}
 	
+	/**
+	 * 
+	 */
+    private void setIntentAndFinish(boolean finish, boolean appChanged) {
+        if(DEBUG) Log.i(TAG, "appChanged="+appChanged);
+        Intent intent = new Intent();
+        intent.putExtra(GuardianApp.APP_CHG, appChanged);
+        setResult(PackageListActivity.RESULT_OK, intent);
+        if(finish) {
+            finish();
+        }
+    }
 }

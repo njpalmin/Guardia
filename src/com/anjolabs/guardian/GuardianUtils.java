@@ -67,7 +67,7 @@ public class GuardianUtils {
 						if(DEBUG) Log.d(TAG,"X509Cert IssuerDN: "+x509.getIssuerDN().getName());
 						CertInfo certInfo = new CertInfo(x509); 
 						if(certInfo.hasVeriSignIssuer(app.mX509Cert)){ // check the certificate is signed by pre-built certificate.
-							appEntry.mAppCertState |= GuardianApp.APP_WITH_ANJO_AKI_REVOKED;
+							appEntry.mAppCertState |= GuardianApp.APP_WITH_ANJO_AKI;
 							X509CRL crl = getX509CRL(certInfo);
 							if(DEBUG)Log.d(TAG,"CRL:"+crl);
 							if( crl != null){
